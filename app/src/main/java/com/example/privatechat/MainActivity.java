@@ -1,7 +1,10 @@
 package com.example.privatechat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -14,6 +17,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -111,9 +118,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void connectClient() {
         if (clientThread == null) {
-            String serverIP = "192.168.43.1"; // The default gateway of the hotspot
-            clientThread = new ClientThread(serverIP, this);
-            executorService.execute(clientThread);
+            String serverIP = getIpAddress();
+            if (serverIP != null) {
+                clientThread = new ClientThread(serverIP, this);
+                executorService.execute(clientThread);
+            } else {
+                Toast.makeText(this, "Unable to get IP address", Toast.LENGTH_SHORT).show();
+            }
         } else {
             Toast.makeText(this, "Already connected as client", Toast.LENGTH_SHORT).show();
         }
@@ -147,8 +158,23 @@ public class MainActivity extends AppCompatActivity {
                 tvChatLog.append(message + "\n");
             }
         });
-
     }
 
-}
+    private String getIpAddress() {
+        try {
 
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                List<InetAddress> addresses = Collections.list(intf.getInetAddresses());
+                for (InetAddress addr : addresses) {
+                    if (!addr.isLoopbackAddress() && addr.isSiteLocalAddress()) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+}

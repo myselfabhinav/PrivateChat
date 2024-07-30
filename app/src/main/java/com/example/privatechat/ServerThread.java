@@ -1,6 +1,5 @@
 package com.example.privatechat;
 
-
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -17,7 +16,7 @@ public class ServerThread extends Thread {
     private PrintWriter output;
     private final int SERVER_PORT = 8080;
     private final MainActivity activity;
-    private boolean running = false;
+    private volatile boolean running = false;
 
     public ServerThread(MainActivity activity) {
         this.activity = activity;
@@ -30,12 +29,15 @@ public class ServerThread extends Thread {
             running = true;
             activity.showMessage("Server started. Waiting for clients...");
 
+            // Accept client connection
             clientSocket = serverSocket.accept();
             activity.showMessage("Client connected: " + clientSocket.getInetAddress());
 
+            // Initialize input/output streams
             input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             output = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);
 
+            // Read messages from client
             String message;
             while (running && (message = input.readLine()) != null) {
                 activity.showMessage("Client: " + message);
@@ -61,6 +63,7 @@ public class ServerThread extends Thread {
             if (serverSocket != null) serverSocket.close();
         } catch (Exception e) {
             Log.e("ServerThread", "Error closing sockets", e);
+            activity.showMessage("Error closing server: " + e.getMessage());
         }
     }
 
@@ -68,4 +71,3 @@ public class ServerThread extends Thread {
         return running;
     }
 }
-

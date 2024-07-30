@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         btnStartServer = findViewById(R.id.btnStartServer);
         btnConnectClient = findViewById(R.id.btnConnectClient);
 
-        // Request permissions
+       
         if (!checkPermissions()) {
             requestPermissions();
         }
@@ -138,10 +138,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (serverThread != null) {
-            // Use executor service to run network operations on a separate thread
+            
             executorService.execute(() -> serverThread.sendMessage(message));
         } else if (clientThread != null) {
-            // Use executor service to run network operations on a separate thread
+           
             executorService.execute(() -> clientThread.sendMessage(message));
         } else {
             Toast.makeText(this, "No active connection", Toast.LENGTH_SHORT).show();
